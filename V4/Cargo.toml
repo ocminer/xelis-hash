@@ -1,0 +1,42 @@
+[package]
+name = "xelishash-v4-bench"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+aes = { version = "0.8.3", features = ["hazmat"] }
+blake3 = "1.5.1"
+chacha20 = "0.9.1"
+bytemuck = { version = "1.15.0", features = ["derive"] }
+rand = "0.8.5"
+rayon = "1.10"
+num_cpus = "1.16"
+
+[[bin]]
+name = "xelishash-v4-bench"
+path = "src/main.rs"
+
+[[bin]]
+name = "bench_mt"
+path = "src/bench_mt.rs"
+
+[[bin]]
+name = "bench_vram"
+path = "src/bench_vram.rs"
+
+[[bin]]
+name = "bench_bigpad_cpu"
+path = "src/bench_bigpad_cpu.rs"
+
+[[bin]]
+name = "bench_full_cpu"
+path = "src/bench_full_cpu.rs"
+
+[[bin]]
+name = "bench_hybrid_cpu"
+path = "src/bench_hybrid_cpu.rs"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
