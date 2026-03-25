@@ -181,6 +181,24 @@ CPUs are the best value per kH/s, making CPU mining profitable and attractive. G
 3. **TapeMix**: Tape derived from scratchpad after stage_1 fill. Same tape for all iterations within a hash. Different tape per hash input.
 4. **Verification**: All three components (S-box state, tape state, dataset reads) feed into the final hash output via XOR into `result` and `idx_seed`. Skipping any component produces a different (wrong) hash.
 
+## Variant B: Reduced Scratchpad (448 KB / 480 KB)
+
+To prevent Zen 4+ CPUs (1 MB L2 per core) from having an unfair advantage over Zen 3 (512 KB L2), the scratchpad can be reduced so it fits within 512 KB L2 on **all** modern CPUs:
+
+| Variant | MEMORY_SIZE | Scratchpad | Inner Iters | L2 fit |
+|---------|-------------|------------|-------------|--------|
+| **A (original)** | 531 × 128 = 67,968 | **544 KB** | 67,968 | Zen 4+ only (1 MB L2) |
+| **B-480** | 480 × 128 = 61,440 | **480 KB** | 61,440 | Zen 3+ (512 KB L2) |
+| **B-448** | 448 × 128 = 57,344 | **448 KB** | 57,344 | Zen 3+ with headroom |
+
+At 544 KB (Variant A), only Zen 4+ keeps the scratchpad in L2 (~4ns access). Zen 3 overflows to L3 (~15ns) — a ~3.5x latency penalty per random access, giving Zen 4+ a significant unfair edge.
+
+At 448-480 KB (Variant B), the scratchpad fits in Zen 3's 512 KB L2 with room for the S-box (2 KB) and other working data. This equalizes CPU generations so the algorithm favors core count and clock speed, not cache architecture.
+
+**Trade-off**: ~10-15% fewer inner iterations → slightly less memory-hardness. S-box, TapeMix, and dataset parameters remain unchanged. GPU impact is proportional (fewer iterations = proportionally faster on all platforms).
+
+**Recommendation**: Variant B-448 (448 KB) provides the most headroom for S-box + locals while fitting all Zen 3+ and Intel Alder Lake+ L2 caches.
+
 ## Next Steps
 
 1. Implement V4 in the XelisHash reference library (Rust)
